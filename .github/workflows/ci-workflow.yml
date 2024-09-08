@@ -61,7 +61,7 @@ permissions:
 jobs:
   Initialize:
     name: Initialize
-    runs-on: arc2-runner-set
+    runs-on: ubuntu
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
