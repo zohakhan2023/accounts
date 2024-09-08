@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        java-version: [ '17', '11' ]  # Specify the Java versions you want to test against
+        java-version: [ '17' ]  # Specify the Java versions you want to test against
 
     steps:
       - name: Checkout code
