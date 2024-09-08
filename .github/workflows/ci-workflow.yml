@@ -12,17 +12,17 @@ jobs:
 
     strategy:
       matrix:
-        java-version: [ '17' ]  # Specify the Java versions you want to test against
+        java-version: [ '17' ]  # Specify the Java version
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up JDK ${{ matrix.java-version }}
+      - name: Set up OpenJDK ${{ matrix.java-version }}
         uses: actions/setup-java@v3
         with:
           java-version: ${{ matrix.java-version }}
-          distribution: 'adopt'  # You can use 'temurin', 'zulu', or other distributions
+          distribution: 'temurin'  # 'temurin' is the recommended OpenJDK distribution
 
       - name: Cache Maven packages
         uses: actions/cache@v3
