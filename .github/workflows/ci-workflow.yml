@@ -1,72 +1,45 @@
-name: Continuous Integration
+name: Java CI with Maven
 
 on:
-  workflow_dispatch:
-    inputs:
-      build-download-choice:
-        description: 'Build or Download from GH Packages'
-        type: choice
-        default: Build
-        options:
-          - Build
-          - Download
-      build-tool:
-        description: 'maven/gradle'
-        type: choice
-        default: maven
-        options:
-          - maven
-          - gradle
-      build-tasks:
-        description: 'Build tasks if build is true'
-        type: string
-      publish-flag:
-        description: 'Publish if build is true'
-        type: boolean
-        default: true
-      fortify-flag:
-        description: 'Run Fortify'
-        type: boolean
-        default: false
-      fortify-app-name:
-        description: 'Fortify Application Name, skip if application is not customer facing or not running Fortify.'
-        required: false
-        type: string
-      pcf-flag:
-        description: 'Deploy to PCF'
-        type: boolean
-        default: false
-      foss-flag:
-        description: 'Run FOSS'
-        type: boolean
-        default: false
-      requestor:
-        description: 'FOSS requestor'
-        type: string
-      foss-process:
-        description: 'FOSS process'
-        type: choice
-        default: Scan, Save and Submit
-        options:
-          - Scan
-          - Scan, Save and Submit
-          - Scan, Save and Submit All False
-          - Submit
-
-permissions:
-  contents: write
-  packages: write
-  pull-requests: write
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
 jobs:
-  Initialize:
-    name: Initialize
-    runs-on: ubuntu
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      - name: List Workspace Contents
-        run: |
-          echo "WorkSpace: $GITHUB_WORKSPACE" ;
-          ls -R ${{ github.workspace }}
+  build:
+    runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        java-version: [ '17', '11' ]  # Specify the Java versions you want to test against
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK ${{ matrix.java-version }}
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: 'adopt'  # You can use 'temurin', 'zulu', or other distributions
+
+      - name: Cache Maven packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Install dependencies and test
+        run: mvn clean install
+
+      - name: Package application
+        run: mvn package -DskipTests=true
+
+      - name: Archive the artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: springboot-app
+          path: target/*.jar
